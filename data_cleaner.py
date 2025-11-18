@@ -1,0 +1,62 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Data loading
+df = pd.read_csv("jumia_products.csv")
+#Data info
+print(f"Initial shape: {df.shape}")
+print("\nFirst rows:")
+print(df.head())
+print("\nData info:")
+print(df.info())
+print("\nMissing values:")
+print(df.isnull().sum())
+
+print("\n" + "="*60)
+print("STEP 1: Data Cleaning")
+print("="*60)
+
+# Remove null values
+df_clean = df.dropna(subset=['name'])
+print(f"After removing missing names: {df_clean.shape}")
+
+# Remove duplicates
+df_clean = df_clean.drop_duplicates(subset=['name', 'price'])
+print(f"After removing duplicates: {df_clean.shape}")
+
+# Turning prices to floats
+df_clean['price'] = df_clean['price'].str.replace('Dhs', '', regex=False)
+df_clean['price'] = df_clean['price'].str.replace(",", "")
+
+df_clean['price'] = df_clean['price'].apply(
+    lambda x: (float(x.split(' - ')[0]) + float(x.split(' - ')[1])) / 2 if ' - ' in x else float(x)
+)
+
+df_clean['price'] = df_clean['price'].astype(float)
+
+
+
+# Create new features
+# Uncomment after adding discounts to scrapped data
+# df_clean['Has_Discount'] = (df_clean['Discount %'] > 0).astype(int)
+
+
+# To be modified when discounts added
+#df_clean['Price_Category'] = pd.cut(df_clean['price'], 
+                                      #bins=[0, 50, 200, 650, 1000], 
+                                      #labels=['Low', 'Medium', 'High', 'Premium'])
+
+# Handle missing old prices
+# Uncomment after adding discounts to scrapped data
+# df_clean['Old Price'] = df_clean['Old Price'].fillna(df_clean['Current Price'])
+
+print("\nCleaned data summary:")
+print(df_clean.describe())
+
+products_with_range = df_clean[df_clean['price'].str.contains(' - ')]
+
+# Display the relevant columns to inspect the products
+print(products_with_range[['name', 'price']])

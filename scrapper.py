@@ -27,7 +27,6 @@ class JumiaScraperMA:
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Get main categories from the navigation bar (class='itm')
             category_links = soup.find_all('a', class_='itm', attrs={'role': 'menuitem'})
             
             logger.info(f"Found {len(category_links)} main categories")
@@ -41,8 +40,7 @@ class JumiaScraperMA:
                     self.categories[category_name] = category_url
                     logger.info(f"Main category found: {category_name} -> {category_url}")
             
-            # Get hidden categories from the submenu (class='tit' inside div class='sub')
-            # These are the categories in the dropdown menu
+
             submenu_categories = soup.find_all('a', class_='tit', attrs={'role': 'menuitem'})
             
             logger.info(f"Found {len(submenu_categories)} submenu categories")
@@ -52,7 +50,6 @@ class JumiaScraperMA:
                 if href:
                     category_name = link.get_text(strip=True)
                     category_url = urljoin(self.base_url, href)
-                    # Avoid duplicates
                     if category_name not in self.categories:
                         self.categories[category_name] = category_url
                         logger.info(f"Submenu category found: {category_name} -> {category_url}")
@@ -105,7 +102,7 @@ class JumiaScraperMA:
         try:
             product_info = {'category': category_name}
             
-            name_elem = product_element.find('h3', class_='name')
+            name_elem = product_element.find(' h3', class_='name')
             if name_elem:
                 product_info['name'] = name_elem.get_text(strip=True)
             
