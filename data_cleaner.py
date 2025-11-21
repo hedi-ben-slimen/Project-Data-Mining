@@ -70,4 +70,6 @@ print("\nCleaned data summary:")
 print(df_clean.describe())
 print(df_clean.head())
 
-
+# ---------- Save cleaned data ----------
+df_clean.to_csv("cleaned_jumia_products.csv", index=False)
+print("\n✓ Cleaned data saved as: cleaned_jumia_products.csv")
