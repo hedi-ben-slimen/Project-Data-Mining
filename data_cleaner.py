@@ -54,8 +54,20 @@ df_clean['Price_Category'] = pd.cut(df_clean['price'],
 # Uncomment after adding discounts to scrapped data
 # df_clean['Old Price'] = df_clean['Old Price'].fillna(df_clean['Current Price'])
 
+
+####### This is only because Jumia includes a mystery item with 100,000 Dhs set as its price ################
+
+max_price_index = df_clean['price'].idxmax()
+
+df_clean = df_clean.drop(max_price_index, axis=0)
+
+print(f"\nRemoved 1 row with index {max_price_index} (price 100000.0).")
+print(f"New maximum price: {df_clean['price'].max()}")
+
+###############################################################################################################
+
 print("\nCleaned data summary:")
 print(df_clean.describe())
 print(df_clean.head())
-print(df_clean.max())
-print(df_clean.max()['url'])
+
+
