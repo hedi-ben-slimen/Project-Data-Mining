@@ -40,7 +40,6 @@ class JumiaScraperMA:
                     self.categories[category_name] = category_url
                     logger.info(f"Main category found: {category_name} -> {category_url}")
             
-
             submenu_categories = soup.find_all('a', class_='tit', attrs={'role': 'menuitem'})
             
             logger.info(f"Found {len(submenu_categories)} submenu categories")
@@ -102,23 +101,45 @@ class JumiaScraperMA:
         try:
             product_info = {'category': category_name}
             
-            name_elem = product_element.find(' h3', class_='name')
+            # Product name (FIXED: removed space before h3)
+            name_elem = product_element.find('h3', class_='name')
             if name_elem:
                 product_info['name'] = name_elem.get_text(strip=True)
             
+            # Current price
             price_elem = product_element.find('div', class_='prc')
             if price_elem:
                 price_text = price_elem.get_text(strip=True)
                 product_info['price'] = price_text
             
+            # Old price (for discounted items)
+            old_price_elem = product_element.find('div', class_='old')
+            if old_price_elem:
+                old_price_text = old_price_elem.get_text(strip=True)
+                product_info['old_price'] = old_price_text
+            else:
+                product_info['old_price'] = None
+            
+            # Discount percentage
+            discount_elem = product_element.find('div', class_='bdg _dsct _sm')
+            if discount_elem:
+                discount_text = discount_elem.get_text(strip=True)
+                # Extract percentage number (e.g., "-35%" -> 35)
+                product_info['discount_percent'] = discount_text.replace('-', '').replace('%', '').strip()
+            else:
+                product_info['discount_percent'] = 0
+            
+            # Rating
             rating_elem = product_element.find('div', class_='rating')
             if rating_elem:
                 product_info['rating'] = rating_elem.get_text(strip=True)
+            else:
+                product_info['rating'] = None
             
+            # Product URL
             link_elem = product_element.find('a', class_='core')
             if link_elem and link_elem.get('href'):
                 product_info['url'] = urljoin(self.base_url, link_elem['href'])
-            
             
             return product_info if product_info else None
             
@@ -158,9 +179,6 @@ class JumiaScraperMA:
         except Exception as e:
             logger.error(f"Error saving to CSV: {e}")
     
-
-            
-    
     def get_statistics(self):
         if not self.products_data:
             logger.info("No data to display statistics!")
@@ -178,12 +196,8 @@ class JumiaScraperMA:
 
 
 def main():
-    
     scraper = JumiaScraperMA()
-    
-
     scraper.scrape_all_categories(max_pages_per_category=50)
-    
     scraper.save_to_csv('jumia_products.csv')    
     scraper.get_statistics()
 
