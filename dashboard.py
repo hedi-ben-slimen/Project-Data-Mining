@@ -10,13 +10,10 @@ import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output, callback
 import dash_bootstrap_components as dbc
 
-# ---------- Load data ----------
 df = pd.read_csv("clustered_jumia_products.csv")
 
-# ---------- Initialize Dash App ----------
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# ---------- App Layout ----------
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
@@ -117,7 +114,6 @@ app.layout = dbc.Container([
     
 ], fluid=True)
 
-# ---------- Callbacks ----------
 @callback(
     [Output('scatter-plot', 'figure'),
      Output('box-plot', 'figure'),
@@ -128,7 +124,6 @@ app.layout = dbc.Container([
      Input('category-dropdown', 'value')]
 )
 def update_dashboard(selected_cluster, selected_category):
-    # Filter data
     filtered_df = df.copy()
     
     if selected_cluster != 'all':
@@ -137,7 +132,6 @@ def update_dashboard(selected_cluster, selected_category):
     if selected_category != 'all':
         filtered_df = filtered_df[filtered_df['category'] == selected_category]
     
-    # 1. Scatter Plot
     scatter_fig = px.scatter(filtered_df,
                             x='price',
                             y='discount_percent',
@@ -149,7 +143,6 @@ def update_dashboard(selected_cluster, selected_category):
                             color_discrete_sequence=px.colors.qualitative.Set2)
     scatter_fig.update_layout(height=400)
     
-    # 2. Box Plot
     box_fig = px.box(filtered_df,
                      x='Cluster_Label',
                      y='price',
@@ -159,7 +152,6 @@ def update_dashboard(selected_cluster, selected_category):
                      color_discrete_sequence=px.colors.qualitative.Pastel)
     box_fig.update_layout(height=400, showlegend=False)
     
-    # 3. Bar Chart
     cluster_counts = filtered_df['Cluster_Label'].value_counts().reset_index()
     cluster_counts.columns = ['Cluster', 'Count']
     bar_fig = px.bar(cluster_counts,
@@ -170,7 +162,6 @@ def update_dashboard(selected_cluster, selected_category):
                      color_continuous_scale='Viridis')
     bar_fig.update_layout(height=400)
     
-    # 4. Pie Chart
     discount_counts = filtered_df['Has_Discount'].value_counts().reset_index()
     discount_counts.columns = ['Has Discount', 'Count']
     discount_counts['Has Discount'] = discount_counts['Has Discount'].map({1: 'On Sale', 0: 'Regular Price'})
@@ -181,7 +172,6 @@ def update_dashboard(selected_cluster, selected_category):
                      color_discrete_sequence=['#ff7f0e', '#1f77b4'])
     pie_fig.update_layout(height=400)
     
-    # 5. Statistics Table
     stats = filtered_df.groupby('Cluster_Label').agg({
         'name': 'count',
         'price': ['mean', 'min', 'max'],
@@ -201,7 +191,6 @@ def update_dashboard(selected_cluster, selected_category):
     
     return scatter_fig, box_fig, bar_fig, pie_fig, table
 
-# ---------- Run App ----------
 if __name__ == '__main__':
     print("\n" + "="*60)
     print(" Starting Jumia Dashboard...")

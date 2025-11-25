@@ -5,28 +5,23 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# ---------- Load cleaned data ----------
 df = pd.read_csv("cleaned_jumia_products.csv")
 
 print("="*60)
 print("K-MEANS CLUSTERING - JUMIA PRODUCTS")
 print("="*60)
 
-# ---------- Feature Selection ----------
-# We'll use: price and discount_percent
 features = ['price', 'discount_percent']
 X = df[features].values
 
 print(f"\nFeatures for clustering: {features}")
 print(f"Data shape: {X.shape}")
 
-# ---------- Data Standardization ----------
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
 print("\nData standardized (mean=0, std=1)")
 
-# ---------- Find Optimal K using Elbow Method ----------
 print("\nFinding optimal number of clusters...")
 
 inertias = []
@@ -37,7 +32,6 @@ for k in K_range:
     kmeans.fit(X_scaled)
     inertias.append(kmeans.inertia_)
 
-# Plot Elbow Curve
 plt.figure(figsize=(10, 6))
 plt.plot(K_range, inertias, 'bo-', linewidth=2, markersize=8)
 plt.xlabel('Number of Clusters (K)', fontsize=12)
@@ -48,8 +42,7 @@ plt.savefig('elbow_method.png', dpi=300, bbox_inches='tight')
 print("✓ Elbow plot saved as: elbow_method.png")
 plt.show()
 
-# ---------- Apply K-Means with optimal K ----------
-optimal_k = 4  # You can change this based on elbow plot
+optimal_k = 4  
 print(f"\nApplying K-Means with K={optimal_k}")
 
 kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
@@ -57,7 +50,6 @@ df['Cluster'] = kmeans.fit_predict(X_scaled)
 
 print(f"✓ Clustering complete!")
 
-# ---------- Cluster Analysis ----------
 print("\n" + "="*60)
 print("CLUSTER ANALYSIS")
 print("="*60)
@@ -71,7 +63,6 @@ for i in range(optimal_k):
     print(f"Price Range: {cluster_data['price'].min():.2f} - {cluster_data['price'].max():.2f} Dhs")
     print(f"Top Categories: {cluster_data['category'].value_counts().head(3).to_dict()}")
 
-# ---------- Cluster Interpretation ----------
 print("\n" + "="*60)
 print("CLUSTER INTERPRETATION")
 print("="*60)
@@ -85,7 +76,6 @@ cluster_summary = df.groupby('Cluster').agg({
 cluster_summary.columns = ['Avg_Price', 'Min_Price', 'Max_Price', 'Avg_Discount', 'Max_Discount', 'Count']
 print(cluster_summary)
 
-# Add cluster labels based on price and discount patterns
 cluster_labels = []
 for i in range(optimal_k):
     avg_price = cluster_summary.loc[i, 'Avg_Price']
@@ -105,7 +95,6 @@ for i in range(optimal_k):
 
 df['Cluster_Label'] = df['Cluster'].map(dict(enumerate(cluster_labels)))
 
-# ---------- Save clustered data ----------
 df.to_csv("clustered_jumia_products.csv", index=False)
 print(f"\n✓ Clustered data saved as: clustered_jumia_products.csv")
 
